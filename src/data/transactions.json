@@ -1,0 +1,12 @@
+[
+  {
+    "id": "8492ad0f-af1c-43e2-bbcd-0252a46a507e",
+    "userId": "6c5732c6-5cae-492b-bc05-6be36689a5cb",
+    "type": "expense",
+    "amount": 250,
+    "category": "food",
+    "description": "Lunch",
+    "date": "2026-04-28",
+    "createdAt": "2026-04-28T12:30:33.086Z"
+  }
+]
