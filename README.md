@@ -1,189 +1,280 @@
-# FinEdge — Personal Finance & Expense Tracker API
+# FinEdge API
 
-A RESTful API backend for tracking personal income and expenses, built with **Node.js** and **Express**. Demonstrates async/await, modular MVC architecture, custom middleware, JWT-based sessions, JSON file persistence with `fs/promises`, in-memory TTL caching, rate limiting, and basic analytics.
+Personal Finance and Expense Tracker backend built with Node.js and Express.
 
----
+This repository provides:
+- JWT-based user authentication
+- Transaction CRUD with user-level isolation
+- Budget management by month
+- Summary analytics (income, expenses, balance, trends)
+- JSON file persistence with fs/promises
+- Global error handling, validation, logging, and rate limiting
+- Jest + supertest integration tests
 
-## Features
+## Tech Stack
 
-- User registration and JWT-based login (mock session)
-- Transaction CRUD (income / expense) with per-user isolation
-- Monthly budgets with `monthlyGoal` and `savingsTarget`
-- `/summary` endpoint with totals, category breakdown, monthly trends, and savings tips
-- Auto-categorization of expenses by description keywords
-- In-memory TTL cache for `/summary` (auto-invalidated on writes)
-- Rate limiting, CORS, request logging, structured error handling
+- Node.js
+- Express
+- dotenv
+- jsonwebtoken
+- express-rate-limit
+- Jest
+- supertest
 
----
+## Run Locally
 
-## Project structure
-
-```
-src/
-├── app.js                  Express app wiring
-├── server.js               Server entry point
-├── config.js               Env-driven configuration
-├── routes/                 Route definitions
-│   ├── userRoutes.js
-│   ├── transactionRoutes.js
-│   ├── summaryRoutes.js
-│   └── budgetRoutes.js
-├── controllers/            Request/response handling
-│   ├── userController.js
-│   ├── transactionController.js
-│   ├── summaryController.js
-│   └── budgetController.js
-├── services/               Business logic
-│   ├── userService.js
-│   ├── transactionService.js
-│   ├── summaryService.js
-│   └── budgetService.js
-├── models/                 Data access (fs/promises + JSON)
-│   ├── userModel.js
-│   ├── transactionModel.js
-│   └── budgetModel.js
-├── middleware/
-│   ├── errorHandler.js     Global error handler + 404
-│   ├── logger.js           Request logging
-│   ├── validator.js        Input validation
-│   ├── auth.js             JWT verification
-│   ├── rateLimiter.js      express-rate-limit
-│   └── asyncHandler.js     async wrapper
-├── utils/
-│   ├── errors.js           Custom error classes
-│   ├── analytics.js        Summary, trends, filtering
-│   ├── aiHelper.js         Auto-category + saving tips
-│   ├── cache.js            In-memory TTL cache
-│   └── fileStore.js        JSON read/write with locking
-└── data/
-    ├── users.json
-    ├── transactions.json
-    └── budgets.json
-tests/                      Jest + supertest integration tests
-```
-
----
-
-## Setup
+1. Install dependencies:
 
 ```bash
-git clone <your-repo-url>
-cd finedge
 npm install
+```
+
+2. Create environment file:
+
+```bash
 cp .env.example .env
+```
+
+3. Start server in dev mode:
+
+```bash
 npm run dev
 ```
 
-Server starts at `http://localhost:3000`.
+4. Server base URL:
 
-### Environment variables (`.env`)
+- http://localhost:3000
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `PORT` | `3000` | HTTP port |
-| `NODE_ENV` | `development` | Env label |
-| `JWT_SECRET` | `dev-secret-change-me` | JWT signing key |
-| `JWT_EXPIRES_IN` | `1d` | Token lifetime |
-| `CACHE_TTL_MS` | `30000` | Summary cache TTL |
-| `RATE_LIMIT_WINDOW_MS` | `60000` | Rate limit window |
-| `RATE_LIMIT_MAX` | `100` | Max requests per window per IP |
+## Important Route Note
 
----
+- `GET /` is not implemented in this project.
+- If you open `http://localhost:3000/`, `{"error":"Route not found","path":"/"}` is expected behavior.
+- Use `GET /health` to verify server status.
+
+## Environment Variables
+
+Defined in `.env.example` and read by `src/config.js`:
+
+- `PORT` (default: `3000`)
+- `NODE_ENV` (default: `development`)
+- `JWT_SECRET` (default: `dev-secret-change-me`)
+- `JWT_EXPIRES_IN` (default: `1d`)
+- `CACHE_TTL_MS` (default: `30000`)
+- `RATE_LIMIT_WINDOW_MS` (default: `60000`)
+- `RATE_LIMIT_MAX` (default: `100`)
+
+## Project Structure
+
+Easy-to-read repository layout with purpose of each folder:
+
+```text
+finedge/
+  src/
+    app.js                -> Express app setup (middlewares + routes)
+    server.js             -> Server bootstrap (starts listening)
+    config.js             -> Environment-based configuration
+
+    controllers/          -> HTTP layer (req/res handling)
+      userController.js
+      transactionController.js
+      budgetController.js
+      summaryController.js
+
+    routes/               -> Endpoint definitions and route mapping
+      userRoutes.js
+      transactionRoutes.js
+      budgetRoutes.js
+      summaryRoutes.js
+
+    services/             -> Business logic
+      userService.js
+      transactionService.js
+      budgetService.js
+      summaryService.js
+
+    models/               -> Data access for JSON persistence
+      userModel.js
+      transactionModel.js
+      budgetModel.js
+
+    middleware/           -> Cross-cutting request handling
+      asyncHandler.js
+      auth.js
+      errorHandler.js
+      logger.js
+      rateLimiter.js
+      validator.js
+
+    utils/                -> Shared helpers (analytics, cache, errors, file IO)
+      aiHelper.js
+      analytics.js
+      cache.js
+      errors.js
+      fileStore.js
+
+    data/                 -> Local JSON storage files
+      users.json
+      transactions.json
+      budgets.json
+
+  tests/                  -> Integration tests (Jest + supertest)
+    health.test.js
+    users.test.js
+    transactions.test.js
+    summary.test.js
+    setup.js
+```
 
 ## Scripts
 
-| Command | Description |
-| --- | --- |
-| `npm start` | Start the server |
-| `npm run dev` | Start with nodemon (auto-reload) |
-| `npm test` | Run Jest test suite |
-
----
-
-## API reference
-
-All authenticated routes require `Authorization: Bearer <token>` (obtained via `POST /users/login`).
-
-### Health
-
-```
-GET /health
-→ 200 { "status": "ok", "uptime": 12.34, "timestamp": "..." }
+```bash
+npm start
+npm run dev
+npm test
 ```
 
-### Users
+## API Testing Guide
 
-```
-POST /users
-Body: { "name": "Alice", "email": "a@x.com", "password": "secret123" }
-→ 201 { id, name, email, preferences, createdAt }
+### ✅ Happy Path (5 Calls)
 
-POST /users/login
-Body: { "email": "a@x.com", "password": "secret123" }
-→ 200 { token, user }
+Use this quick flow to confirm the core functionality end-to-end:
 
-GET  /users/me           (auth)  → current user
-GET  /users              (auth)  → all users
+1. 🔍 Health check
+
+```bash
+curl -sS http://localhost:3000/health
 ```
 
-### Transactions  *(all require auth)*
+2. 👤 Register user
 
-```
-POST   /transactions
-Body: { "type": "expense", "amount": 250, "category": "food", "description": "Lunch", "date": "2026-04-28" }
-→ 201 transaction
-(category is auto-detected from description if omitted)
-
-GET    /transactions?type=expense&category=food&from=2026-04-01&to=2026-04-30
-→ 200 [transactions]
-
-GET    /transactions/:id      → 200 transaction | 404
-PATCH  /transactions/:id      → 200 updated transaction
-DELETE /transactions/:id      → 204
+```bash
+curl -sS -X POST http://localhost:3000/users \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Alice","email":"alice@example.com","password":"secret123"}'
 ```
 
-### Summary  *(auth)*
+3. 🔐 Login and copy token
 
-```
-GET /summary?from=2026-04-01&to=2026-04-30&category=food
-→ 200 {
-  totalIncome, totalExpenses, balance, count,
-  byCategory: { food: 2000, transport: 1500 },
-  monthlyTrends: [ { month: "2026-04", income, expenses, balance } ],
-  tips: [ "..." ],
-  cached: false
-}
+```bash
+curl -sS -X POST http://localhost:3000/users/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"alice@example.com","password":"secret123"}'
 ```
 
-Result is cached for `CACHE_TTL_MS` per (user, filter-set) and auto-invalidated on transaction writes.
+4. 💸 Create one transaction (use Bearer token)
 
-### Budgets  *(auth)*
-
-```
-POST /budgets
-Body: { "month": "2026-04", "monthlyGoal": 25000, "savingsTarget": 5000 }
-→ 201 budget (upsert)
-
-GET  /budgets               → 200 [budgets]
-GET  /budgets/:month        → 200 budget | 404   (e.g. /budgets/2026-04)
+```bash
+curl -sS -X POST http://localhost:3000/transactions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{"type":"expense","amount":250,"category":"food","description":"Lunch"}'
 ```
 
----
+5. 📊 View summary
+
+```bash
+curl -sS -H "Authorization: Bearer <TOKEN>" \
+  "http://localhost:3000/summary"
+```
+
+If these 5 calls work, your main flow is healthy.
+
+### 📚 Detailed API Checks
+
+Use these additional calls for full verification.
+
+#### 1) Health Check
+
+```bash
+curl -sS http://localhost:3000/health
+```
+
+Expected: status `ok` in JSON response.
+
+#### 2) Register User
+
+```bash
+curl -sS -X POST http://localhost:3000/users \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Alice","email":"alice@example.com","password":"secret123"}'
+```
+
+#### 3) Login (Get JWT)
+
+```bash
+curl -sS -X POST http://localhost:3000/users/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"alice@example.com","password":"secret123"}'
+```
+
+Copy `token` from response.
+
+#### 4) Create Transaction (Auth Required)
+
+```bash
+curl -sS -X POST http://localhost:3000/transactions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{"type":"expense","amount":250,"category":"food","description":"Lunch"}'
+```
+
+#### 5) List Transactions
+
+```bash
+curl -sS -H "Authorization: Bearer <TOKEN>" \
+  "http://localhost:3000/transactions?type=expense"
+```
+
+#### 6) Update and Delete Transaction
+
+```text
+PATCH /transactions/:id
+DELETE /transactions/:id
+```
+
+#### 7) Set and Read Budgets
+
+```bash
+curl -sS -X POST http://localhost:3000/budgets \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{"month":"2026-05","monthlyGoal":3000,"savingsTarget":500}'
+```
+
+```text
+GET /budgets
+GET /budgets/:month
+```
+
+#### 8) Get Summary
+
+```bash
+curl -sS -H "Authorization: Bearer <TOKEN>" \
+  "http://localhost:3000/summary?from=2026-04-01&to=2026-04-30"
+```
+
+Summary includes totals, category breakdown, monthly trends, and `cached` field.
+
+## Common Mistakes ⚠️
+
+- Opening `/users/login` in browser address bar sends GET request.
+  - This route expects POST with JSON body.
+- Missing `Content-Type: application/json` for POST/PATCH requests.
+- Missing `Authorization: Bearer <token>` on protected routes.
+- Using `/` as functional route instead of `/health` or API endpoints.
 
 ## Testing
+
+Run all tests:
 
 ```bash
 npm test
 ```
 
-The suite uses Jest + supertest and resets the JSON data files before each test.
+Tests reset JSON data before each run using `tests/setup.js`.
 
----
+## Data Persistence Notes
 
-## Implementation notes
-
-- **Persistence**: JSON files in `src/data/`, accessed via `fs/promises` with an in-process write lock (`utils/fileStore.js`) so concurrent writes don't clobber each other.
-- **Error handling**: Custom `AppError` subclasses (`ValidationError`, `NotFoundError`, `UnauthorizedError`, `ConflictError`) → caught by global middleware → JSON response with the correct status code.
-- **Auth**: `POST /users/login` issues a JWT signed with `JWT_SECRET`. The `requireAuth` middleware verifies it and attaches `req.user`.
-- **Cache**: A simple `Map`-based TTL cache. Keys are namespaced per user; transaction writes call `cache.invalidate` to clear stale summaries.
-- **Bonus features chosen**: **C** (Data persistence with JSON files) and **D** (Advanced middleware: rate limiting, CORS, logging, in-memory cache).
+- Data is stored in `src/data/*.json`.
+- File access goes through `src/utils/fileStore.js`.
+- Write operations are serialized with an in-process lock to reduce race-condition issues.
