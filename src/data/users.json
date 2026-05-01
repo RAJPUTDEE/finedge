@@ -8,5 +8,15 @@
       "currency": "INR"
     },
     "createdAt": "2026-05-01T06:07:10.463Z"
+  },
+  {
+    "id": "92d3ac32-79cc-4ab5-804e-cd7e52432633",
+    "name": "Alice Johnson",
+    "email": "alice@example.com",
+    "passwordHash": "fcf730b6d95236ecd3c9fc2d92d7b6b2bb061514961aec041d6c7a7192f592e4",
+    "preferences": {
+      "currency": "INR"
+    },
+    "createdAt": "2026-05-01T09:04:22.788Z"
   }
 ]

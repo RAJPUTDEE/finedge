@@ -1,0 +1,565 @@
+{
+  "info": {
+    "_postman_id": "finedge-api-collection",
+    "name": "FinEdge API",
+    "description": "Personal Finance and Expense Tracker API - Complete Collection with all endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "🔍 Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Verify the API server is running and healthy. Returns status, uptime, and timestamp."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "👤 Users",
+      "item": [
+        {
+          "name": "1. Register New User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Alice Johnson\",\n  \"email\": \"alice@example.com\",\n  \"password\": \"secret123\",\n  \"preferences\": {\n    \"currency\": \"INR\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["users"]
+            },
+            "description": "Register a new user account. Required: name, email (unique), password (min 6 chars). Returns user object (no password hash)."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.environment.set('token', jsonData.token);",
+                  "  console.log('Token auto-saved: ' + jsonData.token.substring(0, 20) + '...');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alice@example.com\",\n  \"password\": \"secret123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/login",
+              "host": ["{{base_url}}"],
+              "path": ["users", "login"]
+            },
+            "description": "Login with email and password. Returns JWT token and user object. Token is automatically saved to environment variable {{token}}."
+          },
+          "response": []
+        },
+        {
+          "name": "3. Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/me",
+              "host": ["{{base_url}}"],
+              "path": ["users", "me"]
+            },
+            "description": "Get the current authenticated user's profile. Requires Bearer token."
+          },
+          "response": []
+        },
+        {
+          "name": "4. List All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["users"]
+            },
+            "description": "List all registered users in the system. Requires Bearer token."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "💸 Transactions",
+      "item": [
+        {
+          "name": "1. Create Transaction - Expense",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"expense\",\n  \"amount\": 250,\n  \"category\": \"food\",\n  \"description\": \"Lunch at restaurant\",\n  \"date\": \"2026-05-01\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/transactions",
+              "host": ["{{base_url}}"],
+              "path": ["transactions"]
+            },
+            "description": "Create a new expense transaction. Type must be 'expense' or 'income'. Amount must be positive. Category is auto-detected from description if omitted."
+          },
+          "response": []
+        },
+        {
+          "name": "1b. Create Transaction - Income",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"income\",\n  \"amount\": 5000,\n  \"category\": \"salary\",\n  \"description\": \"Monthly salary April 2026\",\n  \"date\": \"2026-05-01\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/transactions",
+              "host": ["{{base_url}}"],
+              "path": ["transactions"]
+            },
+            "description": "Create a new income transaction. Type must be 'income'. Amount must be positive."
+          },
+          "response": []
+        },
+        {
+          "name": "2. List Transactions (All)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/transactions",
+              "host": ["{{base_url}}"],
+              "path": ["transactions"]
+            },
+            "description": "List all transactions for the current user."
+          },
+          "response": []
+        },
+        {
+          "name": "2b. List Transactions (Filtered)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/transactions?type=expense&category=food&from=2026-04-01&to=2026-05-31",
+              "host": ["{{base_url}}"],
+              "path": ["transactions"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "expense"
+                },
+                {
+                  "key": "category",
+                  "value": "food"
+                },
+                {
+                  "key": "from",
+                  "value": "2026-04-01"
+                },
+                {
+                  "key": "to",
+                  "value": "2026-05-31"
+                }
+              ]
+            },
+            "description": "List transactions with optional filters: type (income/expense), category, date range (from/to)."
+          },
+          "response": []
+        },
+        {
+          "name": "3. Get Single Transaction",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/transactions/:id",
+              "host": ["{{base_url}}"],
+              "path": ["transactions", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get a specific transaction by ID. Replace :id with the transaction UUID."
+          },
+          "response": []
+        },
+        {
+          "name": "4. Update Transaction",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 300,\n  \"category\": \"restaurants\",\n  \"description\": \"Updated lunch expense\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/transactions/:id",
+              "host": ["{{base_url}}"],
+              "path": ["transactions", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Update transaction with partial fields. All fields are optional. Returns updated transaction object."
+          },
+          "response": []
+        },
+        {
+          "name": "5. Delete Transaction",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/transactions/:id",
+              "host": ["{{base_url}}"],
+              "path": ["transactions", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Delete a transaction. Returns 204 No Content on success. Also invalidates summary cache."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "💰 Budgets",
+      "item": [
+        {
+          "name": "1. Set/Create Budget",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"month\": \"2026-05\",\n  \"monthlyGoal\": 25000,\n  \"savingsTarget\": 5000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/budgets",
+              "host": ["{{base_url}}"],
+              "path": ["budgets"]
+            },
+            "description": "Create or update budget for a specific month (YYYY-MM format). monthlyGoal and savingsTarget must be non-negative. Uses upsert pattern (updates if exists)."
+          },
+          "response": []
+        },
+        {
+          "name": "2. List All Budgets",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/budgets",
+              "host": ["{{base_url}}"],
+              "path": ["budgets"]
+            },
+            "description": "List all budgets created by the current user."
+          },
+          "response": []
+        },
+        {
+          "name": "3. Get Budget by Month",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/budgets/2026-05",
+              "host": ["{{base_url}}"],
+              "path": ["budgets", "2026-05"]
+            },
+            "description": "Get budget for a specific month. Month must be in YYYY-MM format (e.g., 2026-05). Returns 404 if budget not found."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📊 Summary",
+      "item": [
+        {
+          "name": "1. Get Summary (All Data)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/summary",
+              "host": ["{{base_url}}"],
+              "path": ["summary"]
+            },
+            "description": "Get financial summary with totals, category breakdown, and monthly trends. Result is cached for 30 seconds by default. Returns 'cached: true' if served from cache."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Get Summary (Date Filtered)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/summary?from=2026-04-01&to=2026-05-31",
+              "host": ["{{base_url}}"],
+              "path": ["summary"],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2026-04-01"
+                },
+                {
+                  "key": "to",
+                  "value": "2026-05-31"
+                }
+              ]
+            },
+            "description": "Get summary filtered by date range. Dates must be in ISO format (YYYY-MM-DD)."
+          },
+          "response": []
+        },
+        {
+          "name": "3. Get Summary (Category Filtered)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/summary?category=food",
+              "host": ["{{base_url}}"],
+              "path": ["summary"],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "food"
+                }
+              ]
+            },
+            "description": "Get summary filtered by specific category. Shows only expenses in that category."
+          },
+          "response": []
+        },
+        {
+          "name": "4. Get Summary (Combined Filters)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/summary?from=2026-04-01&to=2026-05-31&category=food",
+              "host": ["{{base_url}}"],
+              "path": ["summary"],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2026-04-01"
+                },
+                {
+                  "key": "to",
+                  "value": "2026-05-31"
+                },
+                {
+                  "key": "category",
+                  "value": "food"
+                }
+              ]
+            },
+            "description": "Get summary with both date range and category filters. Returns analytics for food expenses in April-May 2026."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ]
+}
